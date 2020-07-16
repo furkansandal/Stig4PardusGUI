@@ -10,7 +10,9 @@ Cihazınızda Python3.7 ve üstü kurulu olması gerekmektedir.
    
 
 > sudo apt-get install python3-pip
+
 > sudo python3.7 -m pip -r requirements.txt
+
 > sudo python3.7 start.py
 
 olarak programı çalıştırabilirsiniz.
