@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>389</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>Uygulama Adı v1</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QGroupBox" name="groupBox">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>781</width>
+      <height>141</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Çalıştırma</string>
+    </property>
+    <widget class="QLabel" name="label">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>25</y>
+       <width>141</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Hangisi Çalıştırılsın?</string>
+     </property>
+    </widget>
+    <widget class="Line" name="line">
+     <property name="geometry">
+      <rect>
+       <x>140</x>
+       <y>30</y>
+       <width>20</width>
+       <height>101</height>
+      </rect>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="secilenVeri">
+     <property name="geometry">
+      <rect>
+       <x>160</x>
+       <y>20</y>
+       <width>611</width>
+       <height>26</height>
+      </rect>
+     </property>
+     <item>
+      <property name="text">
+       <string>ornek1</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>ornek2</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>ornek3</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>ornek4</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>ornek5</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QPushButton" name="pushButton">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>131</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>İşlemi Başlat</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="teksefer">
+     <property name="geometry">
+      <rect>
+       <x>160</x>
+       <y>60</y>
+       <width>151</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Tek Sefer Çalıştır</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="surekli">
+     <property name="geometry">
+      <rect>
+       <x>300</x>
+       <y>60</y>
+       <width>131</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Sürekli Çalıştır</string>
+     </property>
+    </widget>
+    <widget class="QTextEdit" name="sure">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>530</x>
+       <y>60</y>
+       <width>231</width>
+       <height>21</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_2">
+     <property name="geometry">
+      <rect>
+       <x>420</x>
+       <y>62</y>
+       <width>101</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Kaç saniyede bir</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton_2">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>100</y>
+       <width>131</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Tümünü Çalıştır</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_2">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>220</y>
+      <width>781</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Durdurma</string>
+    </property>
+    <widget class="QPushButton" name="durdurButon">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>95</y>
+       <width>131</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>İşlemi Başlat</string>
+     </property>
+    </widget>
+    <widget class="Line" name="line_2">
+     <property name="geometry">
+      <rect>
+       <x>130</x>
+       <y>25</y>
+       <width>20</width>
+       <height>101</height>
+      </rect>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_3">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>20</y>
+       <width>141</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Hangisi Durdurulsun?</string>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="secilenVeri_2">
+     <property name="geometry">
+      <rect>
+       <x>150</x>
+       <y>30</y>
+       <width>611</width>
+       <height>26</height>
+      </rect>
+     </property>
+     <item>
+      <property name="text">
+       <string>ornek1</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>ornek2</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>ornek3</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>ornek4</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>ornek5</string>
+      </property>
+     </item>
+    </widget>
+   </widget>
+   <widget class="QLabel" name="label_4">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>180</y>
+      <width>60</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Durum:</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="cikti_label">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>180</y>
+      <width>711</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>22</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>pushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>calistir()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>81</x>
+     <y>110</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>169</x>
+     <y>211</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>teksefer</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>teksefer()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>263</x>
+     <y>102</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>287</x>
+     <y>204</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>surekli</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>surekli()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>363</x>
+     <y>102</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>442</x>
+     <y>196</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_2</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>tamamini_calistir()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>55</x>
+     <y>145</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>118</x>
+     <y>189</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>calistir()</slot>
+  <slot>teksefer()</slot>
+  <slot>surekli()</slot>
+  <slot>tamamini_calistir()</slot>
+ </slots>
+</ui>
