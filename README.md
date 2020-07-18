@@ -1,4 +1,4 @@
-﻿![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/furkansandal/stig4pardusgui) ![GitHub language count](https://img.shields.io/github/languages/count/furkansandal/stig4pardusgui) ![GitHub issues](https://img.shields.io/github/issues/furkansandal/stig4pardusgui) ![GitHub closed issues](https://img.shields.io/github/issues-closed/furkansandal/stig4pardusgui) ![GitHub last commit](https://img.shields.io/github/last-commit/furkansandal/stig4pardusgui) ![GitHub](https://img.shields.io/github/license/furkansandal/stig4pardusgui) ![GitHub followers](https://img.shields.io/github/followers/furkansandal?style=social) ![Twitter Follow](https://img.shields.io/twitter/follow/furkan_sandal?style=social) ![Keybase PGP](https://img.shields.io/keybase/pgp/furkansandal) 
+﻿![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/furkansandal/stig4pardusgui) ![GitHub language count](https://img.shields.io/github/languages/count/furkansandal/stig4pardusgui) [![GitHub issues](https://img.shields.io/github/issues/furkansandal/stig4pardusgui)](https://github.com/furkansandal/Stig4PardusGUI/issues?q=is:open%20is:issue) [![GitHub closed issues](https://img.shields.io/github/issues-closed/furkansandal/stig4pardusgui)](https://github.com/furkansandal/Stig4PardusGUI/issues?q=is:issue%20is:closed) ![GitHub last commit](https://img.shields.io/github/last-commit/furkansandal/stig4pardusgui) ![GitHub](https://img.shields.io/github/license/furkansandal/stig4pardusgui) [![GitHub followers](https://img.shields.io/github/followers/furkansandal?style=social)](https://github.com/furkansandal) [![Twitter Follow](https://img.shields.io/twitter/follow/furkan_sandal?style=social)](https://twitter.com/furkan_sandal) [![Keybase PGP](https://img.shields.io/keybase/pgp/furkansandal)](https://keybase.io/furkansandal) 
 # Stig4Pardus Arayüz ve Geliştirmesi
 
 Selamlar! **Stig4Pardus** uygulaması için (https://github.com/ciari/stig4pardus) bash ten Python'a çevirilmesi özellikler eklenmesi ve daha kullanılır hale getirilmesi hedeflenmektedir.
@@ -11,9 +11,9 @@ Cihazınızda Python3.7 ve üstü kurulu olması gerekmektedir.
    
 
 > sudo apt-get install python3-pip
->
+> 
 > sudo python3.7 -m pip -r requirements.txt
->
+> 
 > sudo python3.7 start.py
 
 olarak programı çalıştırabilirsiniz.
