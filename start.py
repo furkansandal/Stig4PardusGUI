@@ -6,8 +6,12 @@ from main_gui import Ui_MainWindow
 from islem_detay_gui import Ui_Form
 import subprocess
 from time import sleep
+from son_eklenen_log_getir import Son_Eklenen_Sinif
 
 #Detay sınıfımız eğer splash olarak açmak istersek;
+
+
+
 class DetaySinif(QWidget):
 
 
@@ -54,6 +58,9 @@ class BaslaticiSinif(QMainWindow):
 
     def teksefer(self):
         self.ui.sure.setEnabled(False) #tek sefer seçili olursa süreyi devre dışı bırak
+        islem = Son_Eklenen_Sinif()
+        files = islem.duzenleme_getir()
+        islem.baslat(files)
 
 
     def surekli(self):
@@ -81,6 +88,7 @@ class BaslaticiSinif(QMainWindow):
         self.ui.cikti_label.setText("İşlem tamamlandı... Logları kontrol ediniz...")
         dosya.close()
         QApplication.processEvents()
+
 
 
 
