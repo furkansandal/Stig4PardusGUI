@@ -10,9 +10,9 @@ Cihazınızda Python3.7 ve üstü kurulu olması gerekmektedir.
    
 
 > sudo apt-get install python3-pip
-
+>
 > sudo python3.7 -m pip -r requirements.txt
-
+>
 > sudo python3.7 start.py
 
 olarak programı çalıştırabilirsiniz.
@@ -23,4 +23,11 @@ Stig4Pardus kurulu olan sistemler için çalışır durumdadır. Kurulu değilse
 
 - Tüm scriptlerin bash ile tetiklenmesi.
 
+## Güncelleme Detayları
 
+### v0.1
+- Ana tasarım yapıldı.
+- Sadece bash scripti tetiklendi
+- Bash logları kayıt altına alındı programımızda takip edildi.
+### v0.2
+- Script çalıştıktan sonra /var/log/stig4pardus/ dizininde bulunan oluşturulan son 2 Log kaydının otomatik olarak açılması eklendi ancak şuan için pasif. son_eklenen_log_getir.py sınıfı üzerine eklemeler yapıldı.
