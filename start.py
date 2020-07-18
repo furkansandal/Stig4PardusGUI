@@ -66,6 +66,10 @@ class BaslaticiSinif(QMainWindow):
     def surekli(self):
         self.ui.sure.setEnabled(True) #sürekli seçeneği seçilirse sure text alanını aktif ettik.
 
+    def log_goster(self):
+        goster = Son_Eklenen_Sinif()
+        files = goster.duzenleme_getir()
+        goster.baslat(files)
 
     def tamamini_calistir(self):
         print("tamamı başladı")
@@ -88,6 +92,7 @@ class BaslaticiSinif(QMainWindow):
         self.ui.cikti_label.setText("İşlem tamamlandı... Logları kontrol ediniz...")
         dosya.close()
         QApplication.processEvents()
+        self.log_goster()
 
 
 

@@ -26,7 +26,7 @@
       <x>10</x>
       <y>10</y>
       <width>781</width>
-      <height>141</height>
+      <height>161</height>
      </rect>
     </property>
     <property name="title">
@@ -165,13 +165,31 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>100</y>
+       <y>90</y>
        <width>131</width>
        <height>32</height>
       </rect>
      </property>
      <property name="text">
       <string>Tümünü Çalıştır</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton_3">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>120</y>
+       <width>131</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Son Logları Göster</string>
      </property>
     </widget>
    </widget>
@@ -367,11 +385,28 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pushButton_3</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>log_goster()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>33</x>
+     <y>167</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>78</x>
+     <y>227</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>calistir()</slot>
   <slot>teksefer()</slot>
   <slot>surekli()</slot>
   <slot>tamamini_calistir()</slot>
+  <slot>log_goster()</slot>
  </slots>
 </ui>
