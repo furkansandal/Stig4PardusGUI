@@ -1,0 +1,13 @@
+Source: stig4pardus
+Section: admin
+Priority: optional
+Maintainer: İbrahim ARI <ibrahim.ari@pardus.org.tr>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.8
+Homepage: http://www.ahtapot.org.tr
+
+Package: stig4pardus
+Architecture: all
+Depends: ${misc:Depends}
+Description: DISA STIG for Pardus 17 Porting from DISA RHEL 7 STIG V1 R1.
+  DISA STIG(Security Technical Implementation Guides) for Pardus 17 Porting from DISA RHEL 7 STIG V1 R1.

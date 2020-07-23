@@ -1,0 +1,10 @@
+Package: stig4pardus
+Version: 0.1.0-4
+Architecture: all
+Maintainer: İbrahim ARI <ibrahim.ari@pardus.org.tr>
+Installed-Size: 568
+Section: admin
+Priority: optional
+Homepage: http://www.ahtapot.org.tr
+Description: DISA STIG for Pardus 17 Porting from DISA RHEL 7 STIG V1 R1.
+  DISA STIG(Security Technical Implementation Guides) for Pardus 17 Porting from DISA RHEL 7 STIG V1 R1.

@@ -1,0 +1,1151 @@
+#!/bin/bash
+
+VERSION='2.0'
+DATE=`date +%F`
+LOG=STIG-for-Pardus-$DATE
+SYSLANG=$(locale | grep LANG= | cut -d= -f2 | cut -d_ -f1)
+
+
+RED=$(tput setaf 1)
+BOLD=$(tput bold)
+GREEN=$(tput setaf 2)
+NORMAL=$(tput sgr0)
+
+if [ "$SYSLANG" = "tr" ]; then
+	TEXTFILE=/usr/lib/stig4pardus/stig-pardus-17.txt
+	HTMLDIR=/usr/lib/stig4pardus/html
+else
+	TEXTFILE=/usr/lib/stig4pardus/stig-pardus-17-en.txt
+	HTMLDIR=/usr/lib/stig4pardus/html/en
+fi
+
+export SUCCESS_FLAG=0
+export FAIL_FLAG=0
+
+function version() {
+	if [ "$SYSLANG" = "tr" ]; then
+		echo "Pardus için STIG uyumluluk ve sıkılaştırma araçları(v.$VERSION)"
+	else
+		echo "STIG compiance check tool For Pardus(v.$VERSION)"
+	fi
+}
+
+function usage() {
+cat << EOF
+kullanım: stig4pardus [opsiyonlar]
+
+  -s    Kontrol et ve raporu html olarak ver
+  -v    Sürüm görüntüle
+  -h    Yardım görüntüle
+
+Rapor kayıt yolu: /var/log/stig4pardus/STIG-for-Pardus-*.html
+
+Pardus için STIG uyumluluk ve sıkılaştırma araçları (v$VERSION)
+
+Ported from DISA RHEL 7 STIG
+EOF
+}
+
+if [ $# -eq 0 ];then
+        usage
+        exit 1
+elif [ $# -gt 1 ];then
+        tput setaf 1;echo -e "\033[1mHata: Çok fazla parametre\033[0m";tput sgr0
+        echo
+        usage
+        exit 1
+fi
+
+while getopts ":csvhqC" OPTION; do
+        case $OPTION in
+                s)      
+			ENABLE_HTML=1
+                        ;;
+                v)
+                        version
+                        exit 0
+                        ;;
+                h)
+                        usage
+                        exit 0
+                        ;;
+                ?)
+                        tput setaf 1;echo -e "\033[1mHata: Yanlış Parametre!\033[0m";tput sgr0
+                        echo
+                        usage
+                        exit 1
+                        ;;
+        esac
+done
+
+if [[ $EUID -ne 0 ]]; then
+		tput setaf 1; #Setting Output Color To Red 
+		echo -e "\033[1mLütfen root kullanıcısı ile çalıştırın!\033[0m";
+		tput sgr0 #Turn off all attributes
+	exit 1
+fi
+
+RUNTIME=$(date)
+printf "Çalıştırılma Zamanı: %s\nKontrol Başlıyor...\n\n" "${RUNTIME}"
+
+spinner(){
+
+        local pid=$1
+        local delay=0.1
+        local spinstr='|/-\'
+        while [ "$(ps -a | awk '{print $1}' | grep "$pid")" ]; 
+        do
+                local temp=${spinstr#?}
+                printf "%c" "$spinstr"
+                local spinstr=$temp${spinstr%"$temp"}
+                sleep $delay
+                printf "\b"
+        done
+        printf " \b"
+        wait $1
+}
+
+HTML_OVERVIEW_LOG=/var/log/stig4pardus/"$LOG"_overview.html
+
+function html_overview_gen_prologue() {
+        cat $HTMLDIR/html_overview_template_head1.html > $HTML_OVERVIEW_LOG
+        echo "Pardus için STIG uyumluluk ve sıkılaştırma kontrolü $DATE" >>$HTML_OVERVIEW_LOG #HTML title
+        cat $HTMLDIR/html_overview_template_style.html >> $HTML_OVERVIEW_LOG
+        cat $HTMLDIR/html_overview_template_script.html >> $HTML_OVERVIEW_LOG
+        cat $HTMLDIR/html_overview_template_head2.html >> $HTML_OVERVIEW_LOG
+        cat $HTMLDIR/html_overview_template_body1.html >> $HTML_OVERVIEW_LOG
+        echo "$DATE" >> $HTML_OVERVIEW_LOG
+        cat $HTMLDIR/html_overview_template_body2.html >> $HTML_OVERVIEW_LOG
+}
+
+function html_overview_gen_middle() {
+        cat $HTMLDIR/html_overview_template_middle.html >> $HTML_OVERVIEW_LOG
+}
+
+function html_overview_gen_epilogue() {
+        cat $HTMLDIR/html_overview_template_footer.html >> $HTML_OVERVIEW_LOG
+}
+
+function html_overview_output() {
+        echo '<tr><td data-title="ID">'"$RULE_ID"'</td>' >>$HTML_OVERVIEW_LOG
+        echo '<td data-title="ID">'"$RULE_TITLE"'</td>' >>$HTML_OVERVIEW_LOG
+        echo '<td data-title="ID">'"$LEVEL"'</td>' >>$HTML_OVERVIEW_LOG
+        echo '<td data-title="ID">'"$STATUS"'</td></tr>' >>$HTML_OVERVIEW_LOG
+}
+
+function html_overview_manual_output() {
+        echo '<tr><td data-title="ID">'"$RULE_ID"'</td>' >>$HTML_OVERVIEW_LOG
+        echo '<td data-title="ID">'"$RULE_TITLE"'</td>' >>$HTML_OVERVIEW_LOG
+        echo '<td data-title="ID">'"$LEVEL"'</td></tr>' >>$HTML_OVERVIEW_LOG
+}
+
+HTML_DETAILS_LOG=/var/log/stig4pardus/"$LOG"_details.html
+
+function html_details_gen_prologue() {
+        cat $HTMLDIR/html_details_template_head1.html > $HTML_DETAILS_LOG
+        echo "Pardus için STIG uyumluluk ve sıkılaştırma aracı $DATE" >>$HTML_DETAILS_LOG #HTML title
+        cat $HTMLDIR/html_details_template_style.html >> $HTML_DETAILS_LOG
+        cat $HTMLDIR/html_details_template_script.html >> $HTML_DETAILS_LOG
+        cat $HTMLDIR/html_details_template_head2.html >> $HTML_DETAILS_LOG
+        cat $HTMLDIR/html_details_template_body1.html >> $HTML_DETAILS_LOG
+        echo "$DATE" >> $HTML_DETAILS_LOG
+        cat $HTMLDIR/html_details_template_body2.html >> $HTML_DETAILS_LOG
+}
+
+function html_details_gen_middle() {
+        cat $HTMLDIR/html_details_template_middle.html >> $HTML_DETAILS_LOG
+}
+
+function html_details_gen_epilogue() {
+        cat $HTMLDIR/html_details_template_footer.html >> $HTML_DETAILS_LOG
+}
+
+function html_details_output() {
+        echo '<section><font style="font-weight:bold;">Kural Başlığı: </font>'"$RULE_TITLE"'<br />' >>$HTML_DETAILS_LOG
+        echo '<font style="font-weight:bold;">Kural ID: </font>'"$RULE_ID"'<br />'>>$HTML_DETAILS_LOG
+        echo '<font style="font-weight:bold;">Durum: </font>'"$STATUS"'<br />' >>$HTML_DETAILS_LOG
+        echo '<font style="font-weight:bold;">Açıklama: </font>'"$(echo "$QUESTION_DESC" | sed -e 's/\\n\\n/<br \/>/g' -e 's/\\n/<br \/>/g')"'<br />' >>$HTML_DETAILS_LOG
+        echo '<font style="font-weight:bold;">Aranacak İçerik: </font>'"$(echo "$CHECK_CONTENT" | sed -e 's/\\n\\n/<br \/>/g' -e 's/\\n/<br \/>/g')"'<br />' >>$HTML_DETAILS_LOG
+        echo '<font style="font-weight:bold;">Çözüm Tavsiyesi: </font>'"$(echo "$FIX" | sed -e 's/\\n\\n/<br \/>/g' -e 's/\\n/<br \/>/g')"'<br /></section>' >>$HTML_DETAILS_LOG
+}
+
+function html_details_manual_output() {
+        echo '<section><font style="font-weight:bold;">Kural Başlığı: </font>'"$RULE_TITLE"'<br />' >>$HTML_DETAILS_LOG
+        echo '<font style="font-weight:bold;">Kural ID: </font>'"$RULE_ID"'<br />'>>$HTML_DETAILS_LOG
+        echo '<font style="font-weight:bold;">Açıklama: </font>'"$(echo "$QUESTION_DESC" | sed -e 's/\\n\\n/<br \/>/g' -e 's/\\n/<br \/>/g')"'<br />' >>$HTML_DETAILS_LOG
+        echo '<font style="font-weight:bold;">Aranacak İçerik: </font>'"$(echo "$CHECK_CONTENT" | sed -e 's/\\n\\n/<br \/>/g' -e 's/\\n/<br \/>/g')"'<br />' >>$HTML_DETAILS_LOG
+        echo '<font style="font-weight:bold;">Çözüm Tavsiyesi: </font>'"$(echo "$FIX" | sed -e 's/\\n\\n/<br \/>/g' -e 's/\\n/<br \/>/g')"'<br /></section>' >>$HTML_DETAILS_LOG
+}
+
+
+function on_screen_output() {
+       printf "$BOLD""Kontrol Ediliyor:""$NORMAL"" %s\n" "$RULE_TITLE"
+       
+}
+
+function output() {
+
+        EXIT_STATUS=$2
+        LOCATION=$(sed -n "/$1/=" $TEXTFILE)
+        #output rule id
+        RULE_ID=$(sed -n "$LOCATION"p "$TEXTFILE" | sed "s/Kural_ID: //" )
+	#output severity level
+	LEVEL=$(sed -n "$((LOCATION+=1))"p "$TEXTFILE" | sed "s/Onem: //" )
+        #output rule title
+        RULE_TITLE=$(sed -n "$((LOCATION+=2))"p "$TEXTFILE" | sed "s/Kural_Basligi: //")
+        #output description
+        QUESTION_DESC=$(sed -n "$((LOCATION+=3))"p "$TEXTFILE" | sed "s/Aciklama: //")
+        #output check content
+        CHECK_CONTENT=$(sed -n "$((LOCATION+=4))"p "$TEXTFILE" | sed "s/Aranacak_icerik: //")
+        #output fixtext
+        FIX=$(sed -n "$((LOCATION+=5))"p $TEXTFILE | sed "s/Cozum: //")
+        HTML_FIX=$(echo $FIX)
+
+		 
+		
+        if [ $EXIT_STATUS -eq 0 ];then
+                STATUS='<font color="green">GEÇTİ</font>'
+                #OSC_STATUS = ""$GREEN""GEÇTİ""$NORMAL""
+                ((SUCCESS_FLAG++))
+        else
+                STATUS='<font color="#FE4365">KALDI</font>'
+                #OSC_STATUS = ""$RED""KALDI""$NORMAL""
+                ((FAIL_FLAG++))
+        fi
+        
+		on_screen_output
+		
+        if [ $ENABLE_HTML = "1" ];then
+            html_overview_output >> $HTML_OVERVIEW_LOG
+            html_details_output >> $HTML_DETAILS_LOG
+        fi
+}
+
+function manual_output() {
+	
+	if [ -z "$1" ];then
+		return
+	fi
+        LOCATION=$(sed -n "/$1/=" $TEXTFILE)
+        #output rule id
+        RULE_ID=$(sed -n "$LOCATION"p "$TEXTFILE" | sed "s/Kural_ID: //" )
+        #output severity level
+        LEVEL=$(sed -n "$((LOCATION+=1))"p "$TEXTFILE" | sed "s/Onem: //" )
+        #output rule title
+        RULE_TITLE=$(sed -n "$((LOCATION+=2))"p "$TEXTFILE" | sed "s/Kural_Basligi: //")
+        #output description
+        QUESTION_DESC=$(sed -n "$((LOCATION+=3))"p "$TEXTFILE" | sed "s/Aciklama: //")
+        #output check content
+        CHECK_CONTENT=$(sed -n "$((LOCATION+=4))"p "$TEXTFILE" | sed "s/Aranacak_icerik: //")
+        #output fixtext
+        FIX=$(sed -n "$((LOCATION+=5))"p $TEXTFILE | sed "s/Cozum: //")
+        HTML_FIX=$(echo $FIX)
+
+        if [ $ENABLE_HTML = "1" ];then
+            html_overview_manual_output >> $HTML_OVERVIEW_LOG
+            html_details_manual_output >> $HTML_DETAILS_LOG
+        fi
+}
+
+
+
+if [ $ENABLE_HTML = "1" ]; then
+        html_overview_gen_prologue
+        html_details_gen_prologue
+fi
+
+###global env
+
+SCRIPTS_DIR="/usr/lib/stig4pardus/"
+if [ -f /usr/share/doc/gnome/copyright ];then
+        GNOMEINSTALL=1
+else
+        GNOMEINSTALL=0
+fi
+
+##########################################################################
+
+######CAT I
+
+bash ${SCRIPTS_DIR}/scripts/check-package-verify.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-86479r2_rule" $?
+
+
+if [ ${GNOMEINSTALL} -eq 1 ];then
+
+	bash ${SCRIPTS_DIR}/scripts/check-session-lock.sh >/dev/null 2>&1 &
+	spinner $!
+	output "SV-86515r2_rule" $?
+
+
+	bash ${SCRIPTS_DIR}/scripts/check-screensaver-idle-delay.sh >/dev/null 2>&1 &
+	spinner $!
+	output "SV-86517r2_rule" $?
+fi
+
+
+bash ${SCRIPTS_DIR}/scripts/check-password.sh /etc/pam.d/common-password pam_pwquality.so ucredit gt -1 >/dev/null 2>&1 &
+spinner $!
+output "SV-86527r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-password.sh /etc/pam.d/common-password pam_pwquality.so lcredit gt -1 >/dev/null 2>&1 &
+spinner $!
+output "SV-86529r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-password.sh /etc/pam.d/common-password pam_pwquality.so dcredit gt -1 >/dev/null 2>&1 &
+spinner $!
+output "SV-86531r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-password.sh /etc/pam.d/common-password pam_pwquality.so ocredit gt -1 >/dev/null 2>&1 &
+spinner $!
+output "SV-86533r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-password.sh /etc/pam.d/common-password pam_pwquality.so difok ge 8 >/dev/null 2>&1 &
+spinner $!
+output "SV-86535r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-password.sh /etc/pam.d/common-password pam_pwquality.so minclass ge 4 >/dev/null 2>&1 &
+spinner $!
+output "SV-86537r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-password.sh /etc/pam.d/common-password pam_pwquality.so maxrepeat le 2 >/dev/null 2>&1 &
+spinner $!
+output "SV-86539r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-password.sh /etc/pam.d/common-password pam_pwquality.so maxclassrepeat le 4 >/dev/null 2>&1 &
+spinner $!
+output "SV-86541r1_rule" $?
+
+
+sed -e '/^#/d' -e '/^[ \t][ \t]*#/d' -e 's/#.*$//' -e '/^$/d' /etc/pam.d/* | grep password | grep pam_unix.so | grep sha512 > /dev/null 2>&1 &
+spinner $!
+output "SV-86543r1_rule" $?
+
+
+grep -i encrypt /etc/login.defs | grep -v '^#' | grep SHA512 >/dev/null 2>&1 &
+spinner $!
+output "SV-86545r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-password-newuser-minday.sh 1 >/dev/null 2>&1 &
+spinner $!
+output "SV-86549r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-password-max-day-4-newuser.sh 60 >/dev/null 2>&1 &
+spinner $!
+output "SV-86553r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-password-max-day-4-existing.sh 60 >/dev/null 2>&1 &
+spinner $!
+output "SV-86555r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-password.sh /etc/pam.d/common-password pam_unix.so remember ge 5 >/dev/null 2>&1 &
+spinner $!
+output "SV-86557r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-nullok.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-86561r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-ssh.sh emptypassword >/dev/null 2>&1 &
+spinner $!
+output "SV-86563r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-inactive.sh 0 >/dev/null 2>&1 &
+spinner $!
+output "SV-86565r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-deny-and-locktime.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-86567r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-deny-and-locktime-4-root.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-86569r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-privilege-escalation.sh sudo >/dev/null 2>&1 &
+spinner $!
+output "SV-86571r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-privilege-escalation.sh authentication >/dev/null 2>&1 &
+spinner $!
+output "SV-86573r2_rule" $?
+
+if [ ${GNOMEINSTALL} -eq 1 ];then
+	bash ${SCRIPTS_DIR}/scripts/check-gdm3-conf.sh AutomaticLoginEnable >/dev/null 2>&1 &
+	spinner $!
+	output "SV-86577r1_rule" $?
+
+
+	bash ${SCRIPTS_DIR}/scripts/check-gdm3-conf.sh TimedLoginEnable >/dev/null 2>&1 &
+	spinner $!
+	output "SV-86579r2_rule" $?
+fi
+
+bash ${SCRIPTS_DIR}/scripts/check-ssh.sh emptypasswordenvironment >/dev/null 2>&1 &
+spinner $!
+output "SV-86581r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-ssh.sh hostauth >/dev/null 2>&1 &
+spinner $!
+output "SV-86583r2_rule" $?
+
+bash ${SCRIPTS_DIR}/scripts/check-grub.sh password_pbkdf2_efi >/dev/null 2>&1 &
+spinner $!
+output "SV-86587r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-packages.sh rsh-server >/dev/null 2>&1 &
+spinner $!
+output "SV-86591r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-packages.sh ypserv >/dev/null 2>&1 &
+spinner $!
+output "SV-86593r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-aide-cron.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-86597r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-package-install-verification.sh  repository  >/dev/null 2>&1 &
+spinner $!
+output "SV-86601r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-package-install-verification.sh local  >/dev/null 2>&1 &
+spinner $!
+output "SV-86603r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-usb-storage-disable.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-86607r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-autofs.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-86609r1_rule" $?
+
+
+grep -v "^#" /boot/grub/grub.cfg | grep -i "apparmor=1" >/dev/null 2>&1 &
+spinner $!
+output "SV-86613r2_rule" $?
+
+
+sed -e '/^#/d' -e '/^[ \t][ \t]*#/d' -e 's/#.*$//' -e '/^$/d' /etc/login.defs  | grep -i "umask.*077"  >/dev/null 2>&1 &
+spinner $!
+output "SV-86619r1_rule" $?
+
+bash ${SCRIPTS_DIR}/scripts/check-package-up2date.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-86623r3_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-gids.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-86627r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-root-uid.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-86629r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-valid-owner.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-86631r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-valid-group-owner.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-86633r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-homedir-assigned.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-86635r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-homedir-permissive.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-86641r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-homedir-owner.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-86643r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-homedir-gowner.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-86645r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-homedir-files-owner.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-86647r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-homedir-files-gowner.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-86649r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-homedir-files-permissive.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-86651r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-homedir-initfiles-owner.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-86653r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-homedir-initfiles-gowner.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-86655r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-homedir-initfiles-permissive.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-86657r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-homedir-to-exec-path.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-86659r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-homedir-initfiles-world-writable.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-86661r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-mount-option.sh home nosuid >/dev/null 2>&1 &
+spinner $!
+output "SV-86665r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-mount-option.sh media nosuid >/dev/null 2>&1 &
+spinner $!
+output "SV-86667r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-mount-option.sh nfs nosuid >/dev/null 2>&1 &
+spinner $!
+output "SV-86669r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-world-writable-dir-gowner.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-86671r1_rule" $?
+
+
+if [ -e /etc/cron.allow ];then
+	bash ${SCRIPTS_DIR}/scripts/check-cron.sh allowfileown >/dev/null 2>&1 &
+	spinner $!
+	output "SV-86677r1_rule" $?
+
+
+	bash ${SCRIPTS_DIR}/scripts/check-cron.sh allowfilegown >/dev/null 2>&1 &
+	spinner $!
+	output "SV-86679r1_rule" $?
+fi
+
+
+mount | grep "on./home.type" >/dev/null 2>&1 &
+spinner $!
+output "SV-86683r1_rule" $?
+
+
+mount | grep "on./var.type" >/dev/null 2>&1 &
+spinner $!
+output "SV-86685r1_rule" $?
+
+
+mount | grep "on./tmp.type" >/dev/null 2>&1 &
+spinner $!
+output "SV-86689r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-aide.sh acl >/dev/null 2>&1 &
+spinner $!
+output "SV-86693r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-aide.sh sha512 >/dev/null 2>&1 &
+spinner $!
+output "SV-86697r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-grub.sh  removable >/dev/null 2>&1 &
+spinner $!
+output "SV-86699r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-packages.sh telnetd >/dev/null 2>&1 &
+spinner $!
+output "SV-86701r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh  active >/dev/null 2>&1 &
+spinner $!
+output "SV-86703r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh enableflag >/dev/null 2>&1 &
+spinner $!
+output "SV-86705r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh remote_server >/dev/null 2>&1 &
+spinner $!
+output "SV-86707r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh enable_krb5 >/dev/null 2>&1 &
+spinner $!
+output "SV-86709r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh disk_full_error_action >/dev/null 2>&1 &
+spinner $!
+output "SV-86711r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh space_left >/dev/null 2>&1 &
+spinner $!
+output "SV-86713r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh space_left_action >/dev/null 2>&1 &
+spinner $!
+output "SV-86715r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh action_mail_acct >/dev/null 2>&1 &
+spinner $!
+output "SV-86717r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd-syscall.sh chown >/dev/null 2>&1 &
+spinner $!
+output "SV-86721r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd-syscall.sh fchown >/dev/null 2>&1 &
+spinner $!
+output "SV-86723r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd-syscall.sh chmod >/dev/null 2>&1 &
+spinner $!
+output "SV-86729r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd-syscall.sh open >/dev/null 2>&1 &
+spinner $!
+output "SV-86749r2_rule" $?
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd-syscall.sh truncate >/dev/null 2>&1 &
+spinner $!
+output "SV-86755r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh tallylog >/dev/null 2>&1 &
+spinner $!
+output "SV-86767r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh faillock >/dev/null 2>&1 &
+spinner $!
+output "SV-86769r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh lastlog >/dev/null 2>&1 &
+spinner $!
+output "SV-86771r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh passwd >/dev/null 2>&1 &
+spinner $!
+output "SV-86773r3_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh unix_chkpwd >/dev/null 2>&1 &
+spinner $!
+output "SV-86775r3_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh gpasswd >/dev/null 2>&1 &
+spinner $!
+output "SV-86777r3_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh chage >/dev/null 2>&1 &
+spinner $!
+output "SV-86779r3_rule" $?
+
+
+if [ ${GNOMEINSTALL} -eq 1 ];then
+	bash ${SCRIPTS_DIR}/scripts/check-auditd.sh gnome-pty-helper >/dev/null 2>&1 &
+	spinner $!
+	output "SV-86781r3_rule" $?
+fi
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh su >/dev/null 2>&1 &
+spinner $!
+output "SV-86783r3_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh sudo >/dev/null 2>&1 &
+spinner $!
+output "SV-86785r3_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh f-sudoers >/dev/null 2>&1 &
+spinner $!
+output "SV-86787r3_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh newgrp >/dev/null 2>&1 &
+spinner $!
+output "SV-86789r3_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh chsh >/dev/null 2>&1 &
+spinner $!
+output "SV-86791r3_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh sudoedit >/dev/null 2>&1 &
+spinner $!
+output "SV-86793r3_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh mount >/dev/null 2>&1 &
+spinner $!
+output "SV-86795r3_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh umount >/dev/null 2>&1 &
+spinner $!
+output "SV-86797r3_rule" $?
+
+if [ -e /usr/sbin/postdrop ];then
+	bash ${SCRIPTS_DIR}/scripts/check-auditd.sh postdrop >/dev/null 2>&1 &
+	spinner $!
+	output "SV-86799r3_rule" $?
+fi
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh ssh-keysign >/dev/null 2>&1 &
+spinner $!
+output "SV-86803r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh crontab >/dev/null 2>&1 &
+spinner $!
+output "SV-86807r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh pam_timestamp_check >/dev/null 2>&1 &
+spinner $!
+output "SV-86809r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd-syscall.sh init_module >/dev/null 2>&1 &
+spinner $!
+output "SV-86811r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd-syscall.sh delete_module >/dev/null 2>&1 &
+spinner $!
+output "SV-86813r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh insmod >/dev/null 2>&1 &
+spinner $!
+output "SV-86815r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh rmmod >/dev/null 2>&1 &
+spinner $!
+output "SV-86817r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh modprobe >/dev/null 2>&1 &
+spinner $!
+output "SV-86819r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh f-passwd >/dev/null 2>&1 &
+spinner $!
+output "SV-86821r3_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd-syscall.sh rename >/dev/null 2>&1 &
+spinner $!
+output "SV-86823r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd-syscall.sh renameat >/dev/null 2>&1 &
+spinner $!
+output "SV-86825r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd-syscall.sh rmdir >/dev/null 2>&1 &
+spinner $!
+output "SV-86827r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd-syscall.sh unlink >/dev/null 2>&1 &
+spinner $!
+output "SV-86829r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-rsyslog.sh aggregation-server >/dev/null 2>&1 &
+spinner $!
+output "SV-86833r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-rsyslog.sh imtcp >/dev/null 2>&1 &
+spinner $!
+output "SV-86835r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-limits.sh maxlogins >/dev/null 2>&1 &
+spinner $!
+output "SV-86841r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-ssh.sh ciphers >/dev/null 2>&1 &
+spinner $!
+output "SV-86845r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-session-tmout.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-86847r2_rule" $?
+
+if [ -e /etc/pam_ldap.conf ];then
+	${SCRIPTS_DIR}/scripts/check-ldap.sh tls_cacertdir >/dev/null 2>&1 &
+	spinner $!
+	output "SV-86853r2_rule" $?
+
+
+	${SCRIPTS_DIR}/scripts/check-ldap.sh tls_cacertfile >/dev/null 2>&1 &
+	spinner $!
+	output "SV-86855r2_rule" $?
+fi
+
+
+bash ${SCRIPTS_DIR}/scripts/check-ssh.sh installed >/dev/null 2>&1 &
+spinner $!
+output "SV-86857r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-ssh.sh sshd_status >/dev/null 2>&1 &
+spinner $!
+output "SV-86859r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-ssh.sh ClientAliveInterval >/dev/null 2>&1 &
+spinner $!
+output "SV-86861r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-ssh.sh RhostsRSAAuthentication >/dev/null 2>&1 &
+spinner $!
+output "SV-86863r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-ssh.sh ClientAliveCountMax >/dev/null 2>&1 &
+spinner $!
+output "SV-86865r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-ssh.sh IgnoreRhosts >/dev/null 2>&1 &
+spinner $!
+output "SV-86867r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-ssh.sh PrintLastLog >/dev/null 2>&1 &
+spinner $!
+output "SV-86869r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-ssh.sh permitroot >/dev/null 2>&1 &
+spinner $!
+output "SV-86871r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-ssh.sh IgnoreUserKnownHosts >/dev/null 2>&1 &
+spinner $!
+output "SV-86873r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-ssh.sh Protocol >/dev/null 2>&1 &
+spinner $!
+output "SV-86875r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-ssh.sh macs >/dev/null 2>&1 &
+spinner $!
+output "SV-86877r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-ssh.sh pubkeypermissive >/dev/null 2>&1 &
+spinner $!
+output "SV-86879r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-ssh.sh hostkeypermissive >/dev/null 2>&1 &
+spinner $!
+output "SV-86881r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-ssh.sh GSSAPIAuthentication >/dev/null 2>&1 &
+spinner $!
+output "SV-86883r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-ssh.sh KerberosAuthentication >/dev/null 2>&1 &
+spinner $!
+output "SV-86885r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-ssh.sh StrictModes >/dev/null 2>&1 &
+spinner $!
+output "SV-86887r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-ssh.sh UsePrivilegeSeparation >/dev/null 2>&1 &
+spinner $!
+output "SV-86889r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-ssh.sh Compression >/dev/null 2>&1 &
+spinner $!
+output "SV-86891r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-iptables.sh iptables-dos >/dev/null 2>&1 &
+spinner $!
+output "SV-86895r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-iptables.sh iptables-ins >/dev/null 2>&1 &
+spinner $!
+output "SV-86897r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-pam-set.sh showfailed >/dev/null 2>&1 &
+spinner $!
+output "SV-86899r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-file-exist.sh "*.shosts" >/dev/null 2>&1 &
+spinner $!
+output "SV-86901r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-file-exist.sh "shosts.equiv" >/dev/null 2>&1 &
+spinner $!
+output "SV-86903r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-dns.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-86905r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-sysctl.sh net.ipv4.conf.all.accept_source_route ne 0 >/dev/null 2>&1 &
+spinner $!
+output "SV-86907r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-sysctl.sh net.ipv4.conf.default.accept_source_route ne 0 >/dev/null 2>&1 &
+spinner $!
+output "SV-86909r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-sysctl.sh net.ipv4.icmp_echo_ignore_broadcasts ne 1 >/dev/null 2>&1 &
+spinner $!
+output "SV-86911r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-sysctl.sh net.ipv4.conf.default.accept_redirects ne 0 >/dev/null 2>&1 &
+spinner $!
+output "SV-86913r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-sysctl.sh net.ipv4.conf.default.send_redirects ne 0 >/dev/null 2>&1 &
+spinner $!
+output "SV-86915r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-sysctl.sh net.ipv4.conf.all.send_redirects ne 0 >/dev/null 2>&1 &
+spinner $!
+output "SV-86917r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-network-interface-mode.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-86919r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-packages.sh vsftpd >/dev/null 2>&1 &
+spinner $!
+output "SV-86923r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-packages.sh tftpd >/dev/null 2>&1 &
+spinner $!
+output "SV-86925r1_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-ssh.sh X11Forwarding  >/dev/null 2>&1 &
+spinner $!
+output "SV-86927r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-packages.sh x11-common >/dev/null 2>&1 &
+spinner $!
+output "SV-86931r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-sysctl.sh net.ipv4.ip_forward ne 0 >/dev/null 2>&1 &
+spinner $!
+output "SV-86933r1_rule" $?
+
+if systemctl status autofs | grep "Active:.*(running)";then
+	bash ${SCRIPTS_DIR}/scripts/check-snmp.sh >/dev/null 2>&1 &
+	spinner $!
+	output "SV-86937r1_rule" $?
+fi
+
+bash ${SCRIPTS_DIR}/scripts/check-sysctl.sh  net.ipv6.conf.all.accept_source_route ne 0 >/dev/null 2>&1 &
+spinner $!
+output "SV-86943r1_rule" $?
+
+if [ ${GNOMEINSTALL} -eq 1 ];then
+	bash ${SCRIPTS_DIR}/scripts/check-screensaver-idle-delay.sh >/dev/null 2>&1 &
+	spinner $!
+	output "SV-87807r2_rule" $?
+
+
+	bash ${SCRIPTS_DIR}/scripts/check-screensaver-idle-delay.sh >/dev/null 2>&1 &
+	spinner $!
+	output "SV-87809r2_rule" $?
+fi
+
+
+grep pwquality /etc/pam.d/common-password >/dev/null 2>&1 &
+spinner $!
+output "SV-87811r2_rule" $?
+
+
+if mount | grep ".*type.*nfs";then
+	bash ${SCRIPTS_DIR}/scripts/check-nfs.sh >/dev/null 2>&1 &
+	spinner $!
+	output "SV-87813r1_rule" $?
+fi
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh network_failure_action >/dev/null 2>&1 &
+spinner $!
+output "SV-87815r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh f-group  >/dev/null 2>&1 &
+spinner $!
+output "SV-87817r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh f-gshadow  >/dev/null 2>&1 &
+spinner $!
+output "SV-87819r2_rule" $?
+
+
+bash ${SCRIPTS_DIR}/scripts/check-auditd.sh f-shadow  >/dev/null 2>&1 &
+spinner $!
+output "SV-87823r2_rule" $?
+
+
+if [ -e /etc/opasswd ];then
+	bash ${SCRIPTS_DIR}/scripts/check-auditd.sh f-opasswd 0 > /dev/null 2>&1 &
+	spinner $!
+	output "SV-87825r2_rule" $?
+elif [ -e /etc/security/opasswd ];then
+	bash ${SCRIPTS_DIR}/scripts/check-auditd.sh f-opasswd 1 > /dev/null 2>&1 &
+	spinner $!
+	output "SV-87825r2_rule" $?
+fi
+
+
+bash ${SCRIPTS_DIR}/scripts/check-sysctl.sh net.ipv4.conf.all.accept_redirects ne 0 >/dev/null 2>&1 &
+spinner $!
+output "SV-87827r2_rule" $?
+
+bash ${SCRIPTS_DIR}/scripts/check-wifi.sh >/dev/null 2>&1 &
+spinner $!
+output "SV-87829r1_rule" $?
+
+
+######CAT II
+
+######CAT III
+
+##########################################################################
+
+if [ $ENABLE_HTML = "1" ];then
+        html_overview_gen_middle        html_details_gen_middle
+fi
+
+#####Manual checking
+
+cat /usr/lib/stig4pardus/manual.txt | while read line;do
+        manual_output "$line"
+done
+
+if [ $ENABLE_HTML = "1" ];then
+        html_overview_gen_epilogue
+        html_details_gen_epilogue
+fi
+
+#####Statistics
+if [ "$SYSLANG" = "tr" ]; then
+	printf "\n\n%s %s\n" "$GREEN""Geçti: ""$SUCCESS_FLAG"
+	printf "%s %s\n" "$RED""Kaldı: ""$FAIL_FLAG"
+	
+	sed -i -e "s/Geçti/Geçti: $SUCCESS_FLAG/" -e "s/Kaldı/Kaldı: $FAIL_FLAG/" /var/log/stig4pardus/STIG-for-Pardus-${DATE}_*.html
+else
+	printf "\n\n%s %s\n" "$GREEN""Pass: ""$SUCCESS_FLAG"
+	printf "%s %s\n" "$RED""Fail: ""$FAIL_FLAG"
+	
+	sed -i -e "s/Geçti/Pass: $SUCCESS_FLAG/" -e "s/Kaldı/Fail: $FAIL_FLAG/" /var/log/stig4pardus/STIG-for-Pardus-${DATE}_*.html
+fi
