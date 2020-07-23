@@ -23,6 +23,7 @@ olarak programı çalıştırabilirsiniz.
 Stig4Pardus kurulu olan sistemler için çalışır durumdadır. Kurulu değilse program çalışacak ancak işlem yapamayacaksınız.
 
 - Tüm scriptlerin bash ile tetiklenmesi.
+- Verilere veriler.db dosyasından erişilebilir.
 
 ## Güncelleme Detayları
 
