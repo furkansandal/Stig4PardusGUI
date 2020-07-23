@@ -32,3 +32,6 @@ Stig4Pardus kurulu olan sistemler için çalışır durumdadır. Kurulu değilse
 - Bash logları kayıt altına alındı programımızda takip edildi.
 ### v0.2
 - Script çalıştıktan sonra /var/log/stig4pardus/ dizininde bulunan oluşturulan son 2 Log kaydının otomatik olarak açılması eklendi ancak şuan için pasif. son_eklenen_log_getir.py sınıfı üzerine eklemeler yapıldı.
+### v0.3
+- stig_4_pardus_kurallar_parse.py dosyası ile veriler.db dosyası eklendi. Tüm veriler artık sqlite3 veritabanına kayıt edildi. Text içerisinde ki hatalar giderildi.
+- Stig4Pardus uygulaması cli ve gui olarak 2 versiyonda kullanılabilecek şekilde geliştirilmeye yönelindi.

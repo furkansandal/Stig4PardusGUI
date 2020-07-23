@@ -44,7 +44,7 @@ class BaslaticiSinif(QMainWindow):
         for line in iter(p.stdout.readline, b''):
             if line:  # Boş satıları zıplayalım :)
                 yield line
-        # This ensures the process has completed, AND sets the 'returncode' attr
+
         while p.poll() is None:
             sleep(.1)  # CPU-cycle larına yakalanmayalım...
         # Boş STDERR buffer
