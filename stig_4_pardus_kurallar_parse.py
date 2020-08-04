@@ -122,4 +122,4 @@ class Parse():
 
 
 p = Parse()
-p.kurallari_db_ekle()
+p.kurallari_db_ekle() #Tüm kuralları veritabanına ekledik. Şuan için ihtiyaç yok.
