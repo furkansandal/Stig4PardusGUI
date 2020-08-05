@@ -6,6 +6,7 @@ Selamlar! **Stig4Pardus** uygulaması için (https://github.com/ciari/stig4pardu
 - Tüm kurallar text dosyasında değil. Kurallar dahilinde veriler.db SQLite veritabanında kurallar tablosunda kayıt altına alınmıştır.
 - Tüm tarama sonuçları toplu biçimde /var/www/html/ klasörü içerisinde HTML ve JSON raporları olarak çıktı vermektedir.
 - Tüm taramalar veriler.db SQLite veritabanında kontroller ve kontroller_detay tablosunda kayıt altına alınmaktadır.
+- Tüm tarama sonuçları istenilen konuma -d --dizin argümanı ile çıkarılabilir.
 
 
 # Kullanım Klavuzu
@@ -13,7 +14,13 @@ Selamlar! **Stig4Pardus** uygulaması için (https://github.com/ciari/stig4pardu
    Yapılması gereken ilk işlemler gerekli python paketlerinin kurulumudur. İsterseniz virtualenv oluşturabilir, isterseniz direk Python paketleri üzerine kurulum yapabilirsiniz.
 Cihazınızda Python3.x ve üstü kurulu olması gerekmektedir.
    
-Arayüz kurulumu istiyorsanız aşağıdaki kurulumları yapmanız gerekmektedir.
+Dosyaları indirelim.
+
+    wget https://github.com/furkansandal/Stig4PardusGUI/archive/master.zip
+    unzip master.zip
+    cd Stig4PardusGUI-master
+
+Arayüz kurulumu istiyorsanız aşağıdaki kurulumları yapmanız gerekmektedir. Kullanmayacaksanız bu adımı atlayabilirsiniz.
 
     sudo apt-get install python3-pip
     sudo python3 -m pip -r requirements.txt
@@ -40,7 +47,10 @@ veya
     sudo python3 start-cli.py -k
 
 
-olarak programı çalıştırabilirsiniz.
+olarak programı çalıştırabilirsiniz. Ayrıca raporları istediğiniz konuma çıkarmak için ise
+
+    sudo python3 start-cli.py -k -d /var/log/stig4pardus/
+girişi yapabilir /var/log/stig4pardus/ yerine istediğiniz konumu girebilirsiniz.
 
 ## Çalışan Özellikler
 
@@ -50,6 +60,7 @@ Tüm Linux ve Unix tabanlı işletim sistemlerinde çalışır durumdadır. Pyth
 - Kurallara SQLite veritabanında ulaşılabilir
 - Tüm taramalar SQLite veritabanında kayıt altına alınmaktadır.
 - Tüm taramaların raporlar HTML ve JSON formatında /var/www/html  dizinine kayıt edilmektedir.
+- Tüm raporlar istediğiniz dizine kayıt edilebilmektedir. --dizin konum veya -d konum olarak giriş verebilirsiniz. Boş bıraktığınız taktirde /var/www/html e kayıt edilecektir.
 
 ## Güncelleme Detayları
 
@@ -59,10 +70,13 @@ Tüm Linux ve Unix tabanlı işletim sistemlerinde çalışır durumdadır. Pyth
 - Bash logları kayıt altına alındı programımızda takip edildi.
 ### v0.2
 - Script çalıştıktan sonra /var/log/stig4pardus/ dizininde bulunan oluşturulan son 2 Log kaydının otomatik olarak açılması eklendi ancak şuan için pasif. son_eklenen_log_getir.py sınıfı üzerine eklemeler yapıldı.
-### v1.0
+### v1.0  
 - Cli versiyonu tamamlanmıştır.
 - Script çalıştıktan sonra /var/www/html klasörüne kayıt etmektedir. v1.1 güncellemesi ile komut çalışma sırasında girilen argüman klasörüne, boş ise belirleyeceğimiz statik dizine kayıt edecektir.
 - Tüm kurallar veriler.db SQLite veritabanına eklenmiştir.
 - Tüm kontroller SQLite veritabanında kayıt altına alınıyor.
 - HTML düzenli rapor hazırlanmıştır.
 - JSON formatında rapor hazırlanmıştır.
+### v1.1
+- -d --dizin seçeneği ile devamına ekleyeceğiniz konum bilgisiyle istediğiniz yere rapor çıkışı sağlayabilirsiniz. Örnek kullanım `sudo python3 start_cli.py -k -d /root/loglar`
+- -h --help bilgisi eklendi. Argüman girilmediği takdirde help bilgisi otomatik olarak çalışacaktır.

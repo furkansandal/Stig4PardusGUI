@@ -7,6 +7,12 @@ import json
 dizin = "/var/www/html/"
 
 class Stig4Pardus_Kontrol():
+
+
+
+    def __init__(self):
+        self.dizin = "/var/www/html/"
+
     def html_uret(self):
         tarih = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         ust_kisim = """
@@ -357,7 +363,7 @@ function elementDisplay(objid){
             con = sqlite3.connect("veriler.db")
             cur = con.cursor()
             kontrol = cur.execute('''select * from kontroller order by tarih desc''').fetchall()
-            dosya = open(dizin+"STIG4Pardus_"+tarih+".html", "w")
+            dosya = open(self.dizin+"/STIG4Pardus_"+tarih+".html", "w")
             dosya.write(ust_kisim)
             # print(kontrol)
             for i in kontrol:
@@ -459,7 +465,7 @@ function elementDisplay(objid){
 
     def output_kontrol(self):
         try:
-            dosya = open("../output.txt", "r").readlines()
+            dosya = open("output.txt", "r").readlines()
             print("Kontrol edilen adet: " + str(len(dosya)))
             gecen = 0
             kalan = 0
@@ -567,16 +573,18 @@ function elementDisplay(objid){
                 })
 
                 #(dizin+'dump_all_'+str(datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S"))+'.json', 'w')
-            with open(dizin+'dump_all_'+str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))+'.json', 'w') as dosya_ciktisi_json:
+            with open(self.dizin+'/dump_all_'+str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))+'.json', 'w') as dosya_ciktisi_json:
                 json.dump(data, dosya_ciktisi_json)
             #print(data)
         except Exception as hata:
             print("Yazılımcı ile iletişime geçin, hata(json): ", hata)
 
-    def kontrol(self):
+    def kontrol(self, x):
         try:
+            self.dizin = str(x)
             print ("Başlıyoruz...")
             print ("Scriptler Çalıştırılıyor...")
+
             for line in self.run_command("sudo bash stig4pardus_bash_kontrol"):
                 try:
                     veri = line.decode("utf-8").split("\n")[0]
@@ -585,16 +593,17 @@ function elementDisplay(objid){
                     print(line)
             print("Output Kontrol...")
             self.output_kontrol()
-            print("JSON Üretiliyor...")
+            print("JSON Üretiliyor...", dizin, "Konumuna...")
             self.json_uret()
-            print("HTML Üretiliyor...")
+            print("HTML Üretiliyor...", dizin, "Konumuna...")
             self.html_uret()
             print("Tüm işlemler tamam!")
+
         except Exception as hata:
             print("Yazılımcı ile iletişime geçin, hata(kontrol): ", hata)
         #print("Veritabanına ekliyorum...")
 
 
-#baslat = Stig4Pardus_Kontrol().kontrol() #nesnemiz.
+#baslat = Stig4Pardus_Kontrol().kontrol("/var/www/html/xx") #nesnemiz.
 #baslat.kontrol() #tüm kontrolleri gerçekleştirme
 #baslat.output_kontrol() #sadece output okuyup veritabanına eklemek.
