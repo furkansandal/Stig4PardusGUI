@@ -3,10 +3,11 @@
 
 Selamlar! **Stig4Pardus** uygulaması için (https://github.com/ciari/stig4pardus) bash ten Python'a çevirilmesi özellikler eklenmesi ve daha kullanılır hale getirilmesi hedeflenmektedir. Cli versiyonu tamamlanmıştır. 
 
-- Tüm kurallar text dosyasında değil. Kurallar dahilinde veriler.db SQLite veritabanında kurallar tablosunda kayıt altına alınmıştır.
-- Tüm tarama sonuçları toplu biçimde /var/www/html/ klasörü içerisinde HTML ve JSON raporları olarak çıktı vermektedir.
-- Tüm taramalar veriler.db SQLite veritabanında kontroller ve kontroller_detay tablosunda kayıt altına alınmaktadır.
-- Tüm tarama sonuçları istenilen konuma -d --dizin argümanı ile çıkarılabilir.
+- Tüm kurallar text dosyasında değil. Kurallar dahilinde veriler.db SQLite veritabanında kurallar tablosunda kayıt altına alınmıştır.![Stig4Pardus Veritabanı Kurallar](https://furkansandal.com/havelsanapps/gorseller/veritabani_kurallar.png)
+- Tüm tarama sonuçları toplu biçimde /var/www/html/ klasörü içerisinde HTML ve JSON raporları olarak çıktı vermektedir.![Stig4Pardus Rapor](https://furkansandal.com/havelsanapps/gorseller/html_output.png)
+![Stig4Pardus Json Rapor](https://furkansandal.com/havelsanapps/gorseller/json_sonuc.png)
+- Tüm taramalar veriler.db SQLite veritabanında kontroller ve kontroller_detay tablosunda kayıt altına alınmaktadır.![Stig4Pardus Kontroller DB](https://furkansandal.com/havelsanapps/gorseller/veritabani_kontroller.png) ![Stig4Pardus Kontroller Detay](https://furkansandal.com/havelsanapps/gorseller/veritabani_kontroller_detay.png)
+- Tüm tarama sonuçları istenilen konuma -d --dizin argümanı ile çıkarılabilir.![Dizin seçeneği](https://furkansandal.com/havelsanapps/gorseller/dizin.png)
 
 
 # Kullanım Kılavuzu
@@ -79,4 +80,4 @@ Tüm Linux ve Unix tabanlı işletim sistemlerinde çalışır durumdadır. Pyth
 - JSON formatında rapor hazırlanmıştır.
 ### v1.1
 - -d --dizin seçeneği ile devamına ekleyeceğiniz konum bilgisiyle istediğiniz yere rapor çıkışı sağlayabilirsiniz. Örnek kullanım `sudo python3 start_cli.py -k -d /root/loglar`
-- -h --help bilgisi eklendi. Argüman girilmediği takdirde help bilgisi otomatik olarak çalışacaktır.
+- -h --help bilgisi eklendi. Argüman girilmediği takdirde help bilgisi otomatik olarak çalışacaktır.![Stig4Pardus Help](https://furkansandal.com/havelsanapps/gorseller/help.png)
