@@ -459,7 +459,7 @@ function elementDisplay(objid){
 
     def output_kontrol(self):
         try:
-            dosya = open("output.txt", "r").readlines()
+            dosya = open("../output.txt", "r").readlines()
             print("Kontrol edilen adet: " + str(len(dosya)))
             gecen = 0
             kalan = 0

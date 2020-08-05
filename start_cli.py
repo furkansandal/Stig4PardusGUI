@@ -1,5 +1,5 @@
 import argparse
-from stig_4_pardus_kural_kontrol import *
+from yedek_siniflar.stig_4_pardus_kural_kontrol import *
 
 versiyon = "1.0"
 
