@@ -9,7 +9,7 @@ Selamlar! **Stig4Pardus** uygulaması için (https://github.com/ciari/stig4pardu
 - Tüm tarama sonuçları istenilen konuma -d --dizin argümanı ile çıkarılabilir.
 
 
-# Kullanım Klavuzu
+# Kullanım Kılavuzu
 
    Yapılması gereken ilk işlemler gerekli python paketlerinin kurulumudur. İsterseniz virtualenv oluşturabilir, isterseniz direk Python paketleri üzerine kurulum yapabilirsiniz.
 Cihazınızda Python3.x ve üstü kurulu olması gerekmektedir.
