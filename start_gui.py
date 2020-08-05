@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from PyQt5.QtWidgets import *
-from main_gui import Ui_MainWindow
-from islem_detay_gui import Ui_Form
+from yedek_siniflar.main_gui import Ui_MainWindow
+from yedek_siniflar.islem_detay_gui import Ui_Form
 import subprocess
 from time import sleep
-from son_eklenen_log_getir import Son_Eklenen_Sinif
+from yedek_siniflar.son_eklenen_log_getir import Son_Eklenen_Sinif
 
 #Detay sınıfımız eğer splash olarak açmak istersek;
 

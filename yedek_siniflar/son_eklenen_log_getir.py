@@ -10,7 +10,7 @@ class Son_Eklenen_Sinif():
     def duzenleme_getir(self):
         try:
             # print(1)
-            files_path = os.path.join("./", '*')
+            files_path = os.path.join("../", '*')
             files = sorted(
                 glob.iglob(files_path), key=os.path.getctime, reverse=True)
             return files #Son düzenlenen dosyaları getirdik.
