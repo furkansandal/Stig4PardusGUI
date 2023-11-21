@@ -19,10 +19,7 @@ if __name__ == "__main__":
             print("Uygulama versiyonu:" , versiyon)
             quit()
         if args.kontrol:
-            if args.dizin is not None:
-                dizin = args.dizin
-            else:
-                dizin = "/var/www/html/"
+            dizin = args.dizin if args.dizin is not None else "/var/www/html/"
             #print(dizin)
             nesne = Stig4Pardus_Kontrol()
             nesne.kontrol(dizin)

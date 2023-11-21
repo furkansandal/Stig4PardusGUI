@@ -11,9 +11,9 @@ class Son_Eklenen_Sinif():
         try:
             # print(1)
             files_path = os.path.join("../", '*')
-            files = sorted(
-                glob.iglob(files_path), key=os.path.getctime, reverse=True)
-            return files #Son düzenlenen dosyaları getirdik.
+            return sorted(
+                glob.iglob(files_path), key=os.path.getctime, reverse=True
+            )
         except Exception as hata:
             print(hata)
 

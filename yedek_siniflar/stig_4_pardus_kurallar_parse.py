@@ -9,20 +9,20 @@ class Parse():
         d = open(self.klasor, "r").read()
         kurallara_bol = d.split("Kural_ID:")
         s0 = 0
+        s1 = 0
+        s2 = 0
+        s3 = 0
+        s4 = 0
         for i in kurallara_bol:
             onemlere_bol = i.split("Onem:")
-            s1 = 0
             for j in onemlere_bol:
                 #print(j.encode("utf-8"))
                 kural_basligi_bol = j.split("Kural_Basligi:")
-                s2 = 0
                 for k in kural_basligi_bol:
                     aciklama_bol = k.split("Aciklama:")
-                    s3 = 0
                     for l in aciklama_bol:
                         aranan_icerik_bol = l.split("Aranacak_icerik:")
 
-                        s4 = 0
                         for g in aranan_icerik_bol:
                             cozum_bol = g.split("Cozum:")
                             print(cozum_bol)

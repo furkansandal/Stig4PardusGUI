@@ -18,8 +18,8 @@ def run_command(command):
     # Empty STDERR buffer
     err = p.stderr.read()
     if p.returncode != 0:
-       # The run_command() function is responsible for logging STDERR
-       print("Error: " + str(err))
+               # The run_command() function is responsible for logging STDERR
+        print(f"Error: {str(err)}")
 
 for line in run_command("ping 212.237.58.115"):
     print(line.decode("utf-8").split("\n")[0])

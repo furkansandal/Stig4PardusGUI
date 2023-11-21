@@ -14,7 +14,7 @@ class Stig4Pardus_Kontrol():
         self.dizin = "/var/www/html/"
 
     def html_uret(self):
-        tarih = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        tarih = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         ust_kisim = """
 <!DOCTYPE html>
 <html>
@@ -422,13 +422,31 @@ function elementDisplay(objid){
                     aranacak_icerik = kural_detay[5]
                     cozum = kural_detay[6]
 
-                    ic_orta = """
-<tr><td data-title="ID">""" + str(kural_id) + """</td>
-<td data-title="ID">""" + str(baslik) + """</td>
-<td data-title="ID">""" + str(onem) + """</td>
-<td data-title="ID"><font color=\"""" + str(renk) + """\">""" + str(yazi) + """</font></td></tr>
+                    ic_orta = (
+                        (
+                            (
+                                (
+                                    """
+<tr><td data-title="ID">"""
+                                    + str(kural_id)
+                                    + """</td>
+<td data-title="ID">"""
+                                    + str(baslik)
+                                    + """</td>
+<td data-title="ID">"""
+                                    + str(onem)
+                                    + """</td>
+<td data-title="ID"><font color=\""""
+                                    + renk
+                                )
+                                + """\">"""
+                            )
+                            + yazi
+                        )
+                        + """</font></td></tr>
 
                     """
+                    )
                     dosya.write(ic_orta)
 
                     """
@@ -456,17 +474,17 @@ function elementDisplay(objid){
                     'basarisiz_adet': basarisiz_adet,
                     'durum_detay': liste
                 })"""
-                # ('/var/www/html/dump_all'+str(datetime.datetime.now())+'.json', 'w')
+                        # ('/var/www/html/dump_all'+str(datetime.datetime.now())+'.json', 'w')
             dosya.write(alt_kisim)
             dosya.close()
-            # print(data)
+                # print(data)
         except Exception as hata:
             print("Yazılımcı ile iletişime geçin, hata(html): ", hata)
 
     def output_kontrol(self):
         try:
             dosya = open("output.txt", "r").readlines()
-            print("Kontrol edilen adet: " + str(len(dosya)))
+            print(f"Kontrol edilen adet: {len(dosya)}")
             gecen = 0
             kalan = 0
             hata = 0
@@ -483,10 +501,15 @@ function elementDisplay(objid){
             tarih = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             con = sqlite3.connect("veriler.db")
             cur = con.cursor()
-            cur.execute('''insert into kontroller(tarih, basarili_adet, basarisiz_adet) values(?, ?, ?)''',
-                        (str(tarih), str(gecen), str(kalan),))
+            cur.execute(
+                '''insert into kontroller(tarih, basarili_adet, basarisiz_adet) values(?, ?, ?)''',
+                (tarih, str(gecen), str(kalan)),
+            )
             con.commit()
-            kontrol = cur.execute('''select kontroller_id from kontroller where tarih = ?''', (str(tarih),)).fetchone()[0]
+            kontrol = cur.execute(
+                '''select kontroller_id from kontroller where tarih = ?''',
+                (tarih,),
+            ).fetchone()[0]
 
             for i in dosya:
                 i = i.split("\n")[0]
@@ -530,8 +553,7 @@ function elementDisplay(objid){
             con = sqlite3.connect("veriler.db")
             cur = con.cursor()
 
-            data = {}
-            data["sonuclar"] = []
+            data = {"sonuclar": []}
             sayac_kontroller = 0
             kontrol = cur.execute('''select * from kontroller order by tarih desc''').fetchall()
             #print(kontrol)
@@ -573,9 +595,9 @@ function elementDisplay(objid){
                 })
 
                 #(dizin+'dump_all_'+str(datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S"))+'.json', 'w')
-            with open(self.dizin+'/dump_all_'+str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))+'.json', 'w') as dosya_ciktisi_json:
+            with open(f'{self.dizin}/dump_all_' + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + '.json', 'w') as dosya_ciktisi_json:
                 json.dump(data, dosya_ciktisi_json)
-            #print(data)
+                #print(data)
         except Exception as hata:
             print("Yazılımcı ile iletişime geçin, hata(json): ", hata)
 

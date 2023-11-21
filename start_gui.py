@@ -73,24 +73,19 @@ class BaslaticiSinif(QMainWindow):
 
     def tamamini_calistir(self):
         print("tamamı başladı")
-        #QMessageBox.about(self, "Title", "Message")
-        #self.detay = DetaySinif()
-        #self.detay.show()
-        #self.sayi = self.sayi + 1
-        dosya = open("log.txt", "w") #tüm çıktıları log.txt ye kayıt edelim.
-        #for line in self.run_command("ping 8.8.8.8 -c 6"):
-        for line in self.run_command("sudo bash /usr/lib/stig4pardus/stig4pardus -s"):
-            try:
-                veri = line.decode("utf-8").split("\n")[0]
-                print(veri)
-                self.ui.cikti_label.setText(veri)
-                dosya.write(veri + "\n")
-                QApplication.processEvents()
-            except Exception as hata:
-                print(line)
+        with open("log.txt", "w") as dosya:
+            #for line in self.run_command("ping 8.8.8.8 -c 6"):
+            for line in self.run_command("sudo bash /usr/lib/stig4pardus/stig4pardus -s"):
+                try:
+                    veri = line.decode("utf-8").split("\n")[0]
+                    print(veri)
+                    self.ui.cikti_label.setText(veri)
+                    dosya.write(veri + "\n")
+                    QApplication.processEvents()
+                except Exception as hata:
+                    print(line)
 
-        self.ui.cikti_label.setText("İşlem tamamlandı... Logları kontrol ediniz...")
-        dosya.close()
+            self.ui.cikti_label.setText("İşlem tamamlandı... Logları kontrol ediniz...")
         QApplication.processEvents()
         self.log_goster()
 
